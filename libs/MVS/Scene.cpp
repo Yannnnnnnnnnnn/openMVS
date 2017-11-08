@@ -50,12 +50,11 @@ void Scene::Release()
 	platforms.Release();
 	images.Release();
 	pointcloud.Release();
-	mesh.Release();
 }
 
 bool Scene::IsEmpty() const
 {
-	return pointcloud.IsEmpty() && mesh.IsEmpty();
+	return pointcloud.IsEmpty();
 }
 
 
@@ -188,7 +187,7 @@ bool Scene::LoadInterface(const String & fileName)
 				"\t%u points, %u vertices, %u faces",
 				TD_TIMER_GET_FMT().c_str(),
 				images.GetSize(), nCalibratedImages, (double)nTotalPixels/(1024.0*1024.0), (double)nTotalPixels/(1024.0*1024.0*nCalibratedImages),
-				pointcloud.points.GetSize(), mesh.vertices.GetSize(), mesh.faces.GetSize());
+				pointcloud.points.GetSize());
 	return true;
 } // LoadInterface
 
@@ -274,7 +273,7 @@ bool Scene::SaveInterface(const String & fileName) const
 				"\t%u points, %u vertices, %u faces",
 				TD_TIMER_GET_FMT().c_str(),
 				images.GetSize(), nCalibratedImages,
-				pointcloud.points.GetSize(), mesh.vertices.GetSize(), mesh.faces.GetSize());
+				pointcloud.points.GetSize());
 	return true;
 } // SaveInterface
 /*----------------------------------------------------------------*/
@@ -331,7 +330,7 @@ bool Scene::Load(const String& fileName)
 				"\t%u points, %u vertices, %u faces",
 				TD_TIMER_GET_FMT().c_str(),
 				images.GetSize(), nCalibratedImages, (double)nTotalPixels/(1024.0*1024.0), (double)nTotalPixels/(1024.0*1024.0*nCalibratedImages),
-				pointcloud.points.GetSize(), mesh.vertices.GetSize(), mesh.faces.GetSize());
+				pointcloud.points.GetSize());
 	return true;
 	#else
 	return false;
@@ -342,9 +341,9 @@ bool Scene::Save(const String& fileName, ARCHIVE_TYPE type) const
 {
 	TD_TIMER_STARTD();
 	// save using MVS interface if requested
-	if (type == ARCHIVE_MVS) {
-		if (mesh.IsEmpty())
-			return SaveInterface(fileName);
+	if (type == ARCHIVE_MVS) 
+	{
+		return SaveInterface(fileName);
 		type = ARCHIVE_BINARY_ZIP;
 	}
 	#ifdef _USE_BOOST
@@ -371,7 +370,7 @@ bool Scene::Save(const String& fileName, ARCHIVE_TYPE type) const
 				"\t%u points, %u vertices, %u faces",
 				TD_TIMER_GET_FMT().c_str(),
 				images.GetSize(), nCalibratedImages,
-				pointcloud.points.GetSize(), mesh.vertices.GetSize(), mesh.faces.GetSize());
+				pointcloud.points.GetSize());
 	return true;
 	#else
 	return false;

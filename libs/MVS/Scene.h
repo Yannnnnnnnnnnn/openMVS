@@ -36,7 +36,6 @@
 // I N C L U D E S /////////////////////////////////////////////////
 
 #include "DepthMap.h"
-#include "Mesh.h"
 
 
 // D E F I N E S ///////////////////////////////////////////////////
@@ -52,7 +51,6 @@ public:
 	PlatformArr platforms; // camera platforms, each containing the mounted cameras and all known poses
 	ImageArr images; // images, each referencing a platform's camera pose
 	PointCloud pointcloud; // point-cloud (sparse or dense), each containing the point position and the views seeing it
-	Mesh mesh; // mesh, represented as vertices and triangles, constructed from the input point-cloud
 
 	unsigned nCalibratedImages; // number of valid images
 
@@ -80,21 +78,6 @@ public:
 	void DenseReconstructionEstimate(void*);
 	void DenseReconstructionFilter(void*);
 
-	// Mesh reconstruction
-	bool ReconstructMesh(float distInsert=2, bool bUseFreeSpaceSupport=true, unsigned nItersFixNonManifold=4,
-						 float kSigma=2.f, float kQual=1.f, float kb=4.f,
-						 float kf=3.f, float kRel=0.1f/*max 0.3*/, float kAbs=1000.f/*min 500*/, float kOutl=400.f/*max 700.f*/,
-						 float kInf=(float)(INT_MAX/8));
-
-	// Mesh refinement
-	bool RefineMesh(unsigned nResolutionLevel, unsigned nMinResolution, unsigned nMaxViews, float fDecimateMesh, unsigned nCloseHoles, unsigned nEnsureEdgeSize, unsigned nMaxFaceArea, unsigned nScales, float fScaleStep, unsigned nReduceMemory, unsigned nAlternatePair, float fRegularityWeight, float fRatioRigidityElasticity, float fThPlanarVertex, float fGradientStep);
-	#ifdef _USE_CUDA
-	bool RefineMeshCUDA(unsigned nResolutionLevel, unsigned nMinResolution, unsigned nMaxViews, float fDecimateMesh, unsigned nCloseHoles, unsigned nEnsureEdgeSize, unsigned nMaxFaceArea, unsigned nScales, float fScaleStep, unsigned nAlternatePair, float fRegularityWeight, float fRatioRigidityElasticity, float fGradientStep);
-	#endif
-
-	// Mesh texturing
-	bool TextureMesh(unsigned nResolutionLevel, unsigned nMinResolution, float fOutlierThreshold=0.f, float fRatioDataSmoothness=0.3f, bool bGlobalSeamLeveling=true, bool bLocalSeamLeveling=true, unsigned nTextureSizeMultiple=0, unsigned nRectPackingHeuristic=3, Pixel8U colEmpty=Pixel8U(255,127,39));
-
 	#ifdef _USE_BOOST
 	// implement BOOST serialization
 	template <class Archive>
@@ -102,7 +85,6 @@ public:
 		ar & platforms;
 		ar & images;
 		ar & pointcloud;
-		ar & mesh;
 	}
 	#endif
 };

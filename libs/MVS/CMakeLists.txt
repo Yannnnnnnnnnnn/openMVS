@@ -6,18 +6,6 @@ if(CGAL_FOUND)
 	link_directories(${CGAL_LIBRARY_DIRS})
 endif()
 
-FIND_PACKAGE(VCG ${SYSTEM_PACKAGE_REQUIRED})
-if(VCG_FOUND)
-	include_directories(${VCG_INCLUDE_DIRS})
-	add_definitions(${VCG_DEFINITIONS})
-endif()
-
-FIND_PACKAGE(CERES ${SYSTEM_PACKAGE_REQUIRED})
-if(CERES_FOUND)
-	include_directories(${CERES_INCLUDE_DIRS})
-	add_definitions(${CERES_DEFINITIONS})
-endif()
-
 # List sources files
 FILE(GLOB PCH_C "Common.cpp")
 

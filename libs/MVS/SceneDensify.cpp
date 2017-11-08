@@ -406,7 +406,7 @@ typedef CGAL::Delaunay::Vertex_handle VertexHandle;
 typedef kernel_t::Point_3 Point;
 }
 
-// triangulate in-view points, generating a 2D mesh
+// triangulate in-view points
 // return also the estimated depth boundaries (min and max depth)
 std::pair<float,float> TriangulatePointsDelaunay(CGAL::Delaunay& delaunay, const Scene& scene, const DepthData::ViewData& image, const IndexArr& points)
 {
