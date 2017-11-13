@@ -787,6 +787,14 @@ bool DepthMapsData::EstimateDepthMap(uint32_t idxImage,bool USE_CUDA)
 
 	// remove all estimates with too big score and invert confidence map
 	{
+		// init threads
+		ASSERT(nMaxThreads > 0);
+		cList<DepthEstimator> estimators;
+		estimators.Reserve(nMaxThreads);
+		cList<SEACAVE::Thread> threads;
+		if (nMaxThreads > 1)
+			threads.Resize(nMaxThreads-1); // current thread is also used
+
 		// create working threads
 		volatile Thread::safe_t idxPixel;
 		idxPixel = -1;
