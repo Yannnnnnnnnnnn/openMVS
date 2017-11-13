@@ -74,8 +74,8 @@ public:
 	bool ExportCamerasMLP(const String& fileName, const String& fileNameScene) const;
 
 	// Dense reconstruction
-	bool DenseReconstruction();
-	void DenseReconstructionEstimate(void*);
+	bool DenseReconstruction(bool USE_CUDA=false);
+	void DenseReconstructionEstimate(void*,bool USE_CUDA=false);
 	void DenseReconstructionFilter(void*);
 
 	#ifdef _USE_BOOST

@@ -99,8 +99,10 @@ extern float fRandomSmoothBonus;
 /*----------------------------------------------------------------*/
 
 
-struct MVS_API DepthData {
-	struct ViewData {
+struct MVS_API DepthData 
+{
+	struct ViewData 
+	{
 		float scale; // image scale relative to the reference image
 		Camera camera; // camera matrix corresponding to this image
 		Image32F image; // image float intensities
@@ -129,20 +131,24 @@ struct MVS_API DepthData {
 
 	inline DepthData() : references(0) {}
 
-	inline void ReleaseImages() {
+	inline void ReleaseImages() 
+	{
 		FOREACHPTR(ptrImage, images)
 			ptrImage->image.release();
 	}
-	inline void Release() {
+	inline void Release() 
+	{
 		depthMap.release();
 		normalMap.release();
 		confMap.release();
 	}
 
-	inline bool IsValid() const {
+	inline bool IsValid() const 
+	{
 		return !images.IsEmpty();
 	}
-	inline bool IsEmpty() const {
+	inline bool IsEmpty() const 
+	{
 		return depthMap.empty();
 	}
 
@@ -159,7 +165,8 @@ struct MVS_API DepthData {
 	#ifdef _USE_BOOST
 	// implement BOOST serialization
 	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /*version*/) {
+	void serialize(Archive& ar, const unsigned int /*version*/) 
+	{
 		ASSERT(IsValid());
 		ar & depthMap;
 		ar & normalMap;
@@ -173,7 +180,8 @@ typedef MVS_API SEACAVE::cList<DepthData,const DepthData&,1> DepthDataArr;
 /*----------------------------------------------------------------*/
 
 
-struct MVS_API DepthEstimator {
+struct MVS_API DepthEstimator 
+{
 	enum { TexelChannels = 1 };
 	enum { nSizeHalfWindow = 3 };
 	enum { nSizeWindow = nSizeHalfWindow*2+1 };
@@ -335,6 +343,8 @@ struct MVS_API DepthEstimator {
 	const float thConfSmall, thConfBig, thConfIgnore;
 	static const float scaleRanges[12];
 };
+
+
 /*----------------------------------------------------------------*/
 
 
