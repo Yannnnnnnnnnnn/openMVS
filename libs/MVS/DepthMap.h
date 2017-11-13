@@ -197,7 +197,8 @@ struct MVS_API DepthEstimator
 	typedef CLISTDEF0(MapRef) MapRefArr;
 
 	typedef Eigen::Matrix<float,nTexels,1> TexelVec;
-	struct NeighborData {
+	struct NeighborData 
+	{
 		Depth depth;
 		Normal normal;
 		inline NeighborData() {}
@@ -282,11 +283,13 @@ struct MVS_API DepthEstimator
 	}
 
 	// generate random depth and normal
-	static inline Depth RandomDepth(Depth dMin, Depth dMax) {
+	static inline Depth RandomDepth(Depth dMin, Depth dMax) 
+	{
 		ASSERT(dMin > 0);
 		return randomRange(dMin, dMax);
 	}
-	static inline Normal RandomNormal() {
+	static inline Normal RandomNormal() 
+	{
 		const float a1Min = FD2R(0.f);
 		const float a1Max = FD2R(360.f);
 		const float a2Min = FD2R(120.f);

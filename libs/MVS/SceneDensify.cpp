@@ -37,7 +37,7 @@
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Delaunay_triangulation_2.h>
 #include <CGAL/Projection_traits_xy_3.h>
-
+#include "DepthMap_CUDA.cuh"
 using namespace MVS;
 
 

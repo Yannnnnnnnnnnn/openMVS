@@ -9,8 +9,8 @@ endif()
 # List sources files
 FILE(GLOB PCH_C "Common.cpp")
 
-FILE(GLOB LIBRARY_FILES_C "*.cpp")
-FILE(GLOB LIBRARY_FILES_H "*.h" "*.inl")
+FILE(GLOB LIBRARY_FILES_C "*.cpp" "*.cu")
+FILE(GLOB LIBRARY_FILES_H "*.h" "*.inl" "*.cuh")
 
 # Place Common.cpp as the first file in the list
 # needed by cotire when setting PCH manually
