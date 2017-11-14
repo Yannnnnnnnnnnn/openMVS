@@ -32,7 +32,6 @@
 #include "../../libs/MVS/Common.h"
 #include "../../libs/MVS/Scene.h"
 #include <boost/program_options.hpp>
-
 using namespace MVS;
 
 
@@ -199,15 +198,17 @@ void Finalize()
 
 int main(int argc, LPCTSTR* argv)
 {
+	
 	#ifdef _DEBUGINFO
 	// set _crtBreakAlloc index to stop in <dbgheap.c> at allocation
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);// | _CRTDBG_CHECK_ALWAYS_DF);
-	#endif
+	#endif	
 
 	if (!Initialize(argc, argv))
 		return EXIT_FAILURE;
 
 	Scene scene(OPT::nMaxThreads);
+	
 	// load and estimate a dense point-cloud
 	if (!scene.Load(MAKE_PATH_SAFE(OPT::strInputFileName)))
 		return EXIT_FAILURE;
@@ -222,6 +223,7 @@ int main(int argc, LPCTSTR* argv)
 		VERBOSE("Densifying point-cloud completed: %u points (%s)", scene.pointcloud.points.GetSize(), TD_TIMER_GET_FMT().c_str());
 	}
 
+	
 	// save the result
 	const String baseFileName(MAKE_PATH_SAFE(Util::getFullFileName(OPT::strOutputFileName)));
 	scene.Save(baseFileName+_T(".mvs"), (ARCHIVE_TYPE)OPT::nArchiveType);

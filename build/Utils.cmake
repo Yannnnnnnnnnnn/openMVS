@@ -818,10 +818,13 @@ endmacro()
 
 # Defines the main libraries.  User tests should link
 # with one of them.
-function(cxx_library_with_type_no_pch name folder type cxx_flags)
+# there are two version of them
+# one for CUDA version 
+# one for CPU version
+function(cxx_library_with_type_no_pch_cuda name folder type cxx_flags)
   # type can be either STATIC or SHARED to denote a static or shared library.
   # ARGN refers to additional arguments after 'cxx_flags'.
-  add_library("${name}" ${type} ${ARGN})
+  CUDA_ADD_LIBRARY("${name}" ${type} ${ARGN})
   set_target_properties("${name}" PROPERTIES COMPILE_FLAGS "${cxx_flags}")
   if ((BUILD_SHARED_LIBS AND NOT type STREQUAL "STATIC") OR type STREQUAL "SHARED")
     set_target_properties("${name}" PROPERTIES COMPILE_DEFINITIONS "_USRDLL")
@@ -832,11 +835,27 @@ function(cxx_library_with_type_no_pch name folder type cxx_flags)
   set_target_properties("${name}" PROPERTIES FOLDER "${folder}")
 endfunction()
 
+function(cxx_library_with_type_no_pch name folder type cxx_flags)
+	# type can be either STATIC or SHARED to denote a static or shared library.
+	# ARGN refers to additional arguments after 'cxx_flags'.
+	add_library("${name}" ${type} ${ARGN})
+	set_target_properties("${name}" PROPERTIES COMPILE_FLAGS "${cxx_flags}")
+	if ((BUILD_SHARED_LIBS AND NOT type STREQUAL "STATIC") OR type STREQUAL "SHARED")
+		set_target_properties("${name}" PROPERTIES COMPILE_DEFINITIONS "_USRDLL")
+	else()
+		set_target_properties("${name}" PROPERTIES COMPILE_DEFINITIONS "_LIB")
+	endif()
+	# Set project folder
+	set_target_properties("${name}" PROPERTIES FOLDER "${folder}")
+endfunction()
+
 function(cxx_library_with_type name folder type cxx_flags)
   cxx_library_with_type_no_pch("${name}" "${folder}" "${type}" "${cxx_flags}" ${ARGN})
   # Generate precompiled headers
   set_target_pch("${name}")
 endfunction()
+
+
 
 ########################################################################
 #

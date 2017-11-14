@@ -17,9 +17,10 @@ FILE(GLOB LIBRARY_FILES_H "*.h" "*.inl" "*.cuh")
 LIST(REMOVE_ITEM LIBRARY_FILES_C ${PCH_C})
 SET(LIBRARY_FILES_C "${PCH_C};${LIBRARY_FILES_C}")
 
-cxx_library_with_type_no_pch(MVS "Libs" "" "${cxx_default}"
-	${LIBRARY_FILES_C} ${LIBRARY_FILES_H}
-)
+if(_USE_CUDA)
+	cxx_library_with_type_no_pch_cuda(MVS "Libs" "" "${cxx_default}" ${LIBRARY_FILES_C} ${LIBRARY_FILES_H})
+endif()
+
 
 # Manually set Common.h as the precompiled header
 set_target_pch(MVS Common.h)

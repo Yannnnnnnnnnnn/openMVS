@@ -34,6 +34,8 @@
 #define _USE_OPENCV
 #include "Interface.h"
 
+#include "DepthMap_CUDA.cuh"
+
 using namespace MVS;
 
 
