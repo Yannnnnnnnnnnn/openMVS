@@ -198,7 +198,6 @@ void Finalize()
 
 int main(int argc, LPCTSTR* argv)
 {
-	
 	#ifdef _DEBUGINFO
 	// set _crtBreakAlloc index to stop in <dbgheap.c> at allocation
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);// | _CRTDBG_CHECK_ALWAYS_DF);
@@ -212,11 +211,13 @@ int main(int argc, LPCTSTR* argv)
 	// load and estimate a dense point-cloud
 	if (!scene.Load(MAKE_PATH_SAFE(OPT::strInputFileName)))
 		return EXIT_FAILURE;
-	if (scene.pointcloud.IsEmpty()) {
+	if (scene.pointcloud.IsEmpty()) 
+	{
 		VERBOSE("error: empty initial point-cloud");
 		return EXIT_FAILURE;
 	}
-	if ((ARCHIVE_TYPE)OPT::nArchiveType != ARCHIVE_MVS) {
+	if ((ARCHIVE_TYPE)OPT::nArchiveType != ARCHIVE_MVS) 
+	{
 		TD_TIMER_START();
 		if (!scene.DenseReconstruction())
 			return EXIT_FAILURE;

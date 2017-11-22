@@ -37,6 +37,7 @@
 #include <CGAL/property_map.h>
 #include <CGAL/pca_estimate_normals.h>
 
+
 using namespace MVS;
 
 
@@ -221,7 +222,16 @@ unsigned DepthData::DecRef()
 
 
 
+
 // S T R U C T S ///////////////////////////////////////////////////
+
+void DepthEstimator_CUDA::test()
+{
+	test_random();
+}
+
+
+
 
 // create the map for converting index to matrix position
 //                         1 2 3

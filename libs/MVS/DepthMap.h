@@ -37,6 +37,7 @@
 
 #include "Image.h"
 #include "PointCloud.h"
+#include "DepthMap_CUDA_function.cuh"
 
 
 // D E F I N E S ///////////////////////////////////////////////////
@@ -179,6 +180,10 @@ struct MVS_API DepthData
 typedef MVS_API SEACAVE::cList<DepthData,const DepthData&,1> DepthDataArr;
 /*----------------------------------------------------------------*/
 
+struct MVS_API DepthEstimator_CUDA
+{
+	void test();
+};
 
 struct MVS_API DepthEstimator 
 {
