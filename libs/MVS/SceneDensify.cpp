@@ -1377,7 +1377,7 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 		TD_TIMER_STARTD();
 
 		const uint32_t idxImage(pConnection->idx);
-		const DepthData& depthData(arrDepthData[idxImage]);
+		DepthData& depthData(arrDepthData[idxImage]);
 		depthData.IncRef(ComposeDepthFilePath(idxImage, "dmap"));
 		ASSERT(!depthData.images.IsEmpty() && !depthData.neighbors.IsEmpty());
 		size_t point_estimate_this = ROUND2INT(depthData.depthMap.area()*(0.5f/*valid*/*0.3f/*new*/));
@@ -1428,7 +1428,7 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 					continue;
 				// create the corresponding 3D point
 				idxPoint = (uint32_t)point_cloud_this.points.GetSize();
-				point_cloud_this::Point& point = point_cloud_this.points.AddEmpty();
+				PointCloud::Point& point = point_cloud_this.points.AddEmpty();
 				point = imageData.camera.TransformPointI2W(Point3(Point2f(x),depth));
 				PointCloud::ViewArr& views = point_cloud_this.pointViews.AddEmpty();
 				views.Insert(idxImage);
@@ -1534,7 +1534,7 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 		DEBUG_ULTIMATE("Depths map for reference image %3u fused using %u depths maps: %u new points (%s)", idxImage, depthData.images.GetSize()-1, point_cloud_this.points.GetSize()-nNumPointsPrev, TD_TIMER_GET_FMT().c_str());
 		progress.display(pConnection-connections.Begin());
 	}
-	
+
 	GET_LOGCONSOLE().Play();
 	progress.close();
 	arrDepthIdx.Release();
