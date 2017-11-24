@@ -219,6 +219,7 @@ int main(int argc, LPCTSTR* argv)
 	if ((ARCHIVE_TYPE)OPT::nArchiveType != ARCHIVE_MVS) 
 	{
 		TD_TIMER_START();
+		
 		if (!scene.DenseReconstruction())
 			return EXIT_FAILURE;
 		VERBOSE("Densifying point-cloud completed: %u points (%s)", scene.pointcloud.points.GetSize(), TD_TIMER_GET_FMT().c_str());

@@ -1363,7 +1363,6 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 	size_t nDepths(0);
 	typedef TImage<cuint32_t> DepthIndex;
 	typedef SEACAVE::cList<DepthIndex,const DepthIndex&,1> DepthIndexArr;
-	DepthIndexArr arrDepthIdx(scene.images.GetSize());
 	ProjsArr projs(0, nPointsEstimate);
 	pointcloud.points.Reserve(nPointsEstimate);
 	pointcloud.pointViews.Reserve(nPointsEstimate);
@@ -1372,35 +1371,24 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 	Util::Progress progress(_T("Fused depth-maps"), connections.GetSize());
 	GET_LOGCONSOLE().Pause();
 
-	FOREACHPTR(pConnection, connections) 
+	//FOREACHPTR(pConnection, connections)
+	int depthData_in_use[scene.images.GetSize()];
+	for(int i=0;i<connections.size();i++) 
 	{
+		DepthIndexArr arrDepthIdx(scene.images.GetSize());
+
 		TD_TIMER_STARTD();
-
-		const uint32_t idxImage(pConnection->idx);
+		
+		const uint32_t idxImage(connections[i].idx);
 		DepthData& depthData(arrDepthData[idxImage]);
-		depthData.IncRef(ComposeDepthFilePath(idxImage, "dmap"));
-		ASSERT(!depthData.images.IsEmpty() && !depthData.neighbors.IsEmpty());
-		size_t point_estimate_this = ROUND2INT(depthData.depthMap.area()*(0.5f/*valid*/*0.3f/*new*/));
-		PointCloud point_cloud_this;
-		point_cloud_this.Release();
-		point_cloud_this.points.Reserve(point_estimate_this);
-		point_cloud_this.pointViews.Reserve(point_estimate_this);
-		point_cloud_this.pointWeights.Reserve(point_estimate_this);
-
-
-		FOREACHPTR(pNeighbor, depthData.neighbors) 
+#pragma omp critical  
 		{
-			const uint32_t idxImageB(pNeighbor->idx.ID);
-			DepthData& depthDataB = arrDepthData[idxImageB];
-			depthDataB.IncRef(ComposeDepthFilePath(idxImageB, "dmap"));
-			const Image& imageData = scene.images[pNeighbor->idx.ID];
-			DepthIndex& depthIdxs = arrDepthIdx[&imageData-scene.images.Begin()];
-			if (depthIdxs.empty()) 
+			if(depthData_in_use[idxImage]==0)
 			{
-				depthIdxs.create(Image8U::Size(imageData.width, imageData.height));
-				depthIdxs.memset((uint8_t)NO_ID);
+				depthData.IncRef(ComposeDepthFilePath(idxImage, "dmap"));
 			}
-		}
+			depthData_in_use[idxImage]++;
+		}		
 		ASSERT(!depthData.IsEmpty());
 		const Image8U::Size sizeMap(depthData.depthMap.size());
 		const Image& imageData = *depthData.images.First().pImageData;
@@ -1411,6 +1399,40 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 			depthIdxs.create(Image8U::Size(imageData.width, imageData.height));
 			depthIdxs.memset((uint8_t)NO_ID);
 		}
+
+
+		ASSERT(!depthData.images.IsEmpty() && !depthData.neighbors.IsEmpty());
+		size_t point_estimate_this = ROUND2INT(depthData.depthMap.area()*(0.5f/*valid*/*0.3f/*new*/));
+		PointCloud point_cloud_this;
+		ProjsArr projs_this(0, point_estimate_this);
+		point_cloud_this.Release();
+		point_cloud_this.points.Reserve(point_estimate_this);
+		point_cloud_this.pointViews.Reserve(point_estimate_this);
+		point_cloud_this.pointWeights.Reserve(point_estimate_this);
+
+
+		FOREACHPTR(pNeighbor, depthData.neighbors) 
+		{
+			const uint32_t idxImageB(pNeighbor->idx.ID);
+			DepthData& depthDataB = arrDepthData[idxImageB];
+#pragma omp critical  
+		{
+			if(depthData_in_use[idxImageB]==0)
+			{
+				depthDataB.IncRef(ComposeDepthFilePath(idxImageB, "dmap"));
+			}
+			depthData_in_use[idxImage]++;
+		}
+	
+			const Image& imageData = scene.images[pNeighbor->idx.ID];
+			DepthIndex& depthIdxs = arrDepthIdx[&imageData-scene.images.Begin()];
+			if (depthIdxs.empty()) 
+			{
+				depthIdxs.create(Image8U::Size(imageData.width, imageData.height));
+				depthIdxs.memset((uint8_t)NO_ID);
+			}
+		}
+		
 
 		const size_t nNumPointsPrev(point_cloud_this.points.GetSize());
 		for (int i=0; i<sizeMap.height; ++i) 
@@ -1434,7 +1456,7 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 				views.Insert(idxImage);
 				PointCloud::WeightArr& weights = point_cloud_this.pointWeights.AddEmpty();
 				weights.Insert(depthData.confMap(x));
-				ProjArr& pointProjs = projs.AddEmpty();
+				ProjArr& pointProjs = projs_this.AddEmpty();
 				pointProjs.Insert(Proj(x));
 				// check the projection in the neighbor depth-maps
 				REAL confidence(weights.First());
@@ -1487,7 +1509,7 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 						ASSERT(arrDepthIdx[idxImageB].isInside(x) && arrDepthIdx[idxImageB](x).idx != NO_ID);
 						arrDepthIdx[idxImageB](x).idx = NO_ID;
 					}
-					projs.RemoveLast();
+					projs_this.RemoveLast();
 					point_cloud_this.pointWeights.RemoveLast();
 					point_cloud_this.pointViews.RemoveLast();
 					point_cloud_this.points.RemoveLast();
@@ -1504,14 +1526,18 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 			}
 		}
 
-
-		for (int j = 0; j < point_cloud_this.points.size(); j++)
+#pragma omp critical 
 		{
-			pointcloud.points.push_back(point_cloud_this.points[j]);
-			pointcloud.pointViews.push_back(point_cloud_this.pointViews[j]);
-			pointcloud.pointWeights.push_back(point_cloud_this.pointWeights[j]);
+			for (int j = 0; j < point_cloud_this.points.size(); j++)
+			{
+				projs.push_back(projs_this[j]);
+				pointcloud.points.push_back(point_cloud_this.points[j]);
+				pointcloud.pointViews.push_back(point_cloud_this.pointViews[j]);
+				pointcloud.pointWeights.push_back(point_cloud_this.pointWeights[j]);
+			}
 		}
-		point_cloud_this.Release();	
+		point_cloud_this.Release();
+		projs_this.Release();	
 
 		//yqs
 		//release all the image
@@ -1523,21 +1549,37 @@ void DepthMapsData::FuseDepthMaps(PointCloud& pointcloud, bool bEstimateNormal)
 			DepthIndex& depthIdxsB = arrDepthIdx[&imageDataB - scene.images.Begin()];
 
 			depthIdxsB.release();
-			depthDataB.DecRef();
+#pragma omp critical  
+			{
+				depthData_in_use[idxImageB]--;
+				if(depthData_in_use[idxImageB]==0)
+				{
+					depthDataB.DecRef();
+				}
+			}
+			
 		}
-		depthData.DecRef();
+#pragma omp critical  
+		{
+			depthData_in_use[idxImage]--;
+			if(depthData_in_use[idxImage]==0)
+			{
+				depthData.DecRef();
+			}
+		}
+		
 		depthIdxs.release();
 
+		arrDepthIdx.Release();
 
-
-		ASSERT(point_cloud_this.points.GetSize() == point_cloud_this.pointViews.GetSize() && point_cloud_this.points.GetSize() == point_cloud_this.pointWeights.GetSize() && point_cloud_this.points.GetSize() == projs.GetSize());
+		ASSERT(point_cloud_this.points.GetSize() == point_cloud_this.pointViews.GetSize() && point_cloud_this.points.GetSize() == point_cloud_this.pointWeights.GetSize() && point_cloud_this.points.GetSize() == projs_this.GetSize());
 		DEBUG_ULTIMATE("Depths map for reference image %3u fused using %u depths maps: %u new points (%s)", idxImage, depthData.images.GetSize()-1, point_cloud_this.points.GetSize()-nNumPointsPrev, TD_TIMER_GET_FMT().c_str());
-		progress.display(pConnection-connections.Begin());
+		progress.display(i);
 	}
 
 	GET_LOGCONSOLE().Play();
 	progress.close();
-	arrDepthIdx.Release();
+	
 
 	DEBUG_EXTRA("Depth-maps fused and filtered: %u depth-maps, %u depths, %u points (%d%%%%) (%s)", connections.GetSize(), nDepths, pointcloud.points.GetSize(), ROUND2INT((100.f*pointcloud.points.GetSize())/nDepths), TD_TIMER_GET_FMT().c_str());
 
