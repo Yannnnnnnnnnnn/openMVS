@@ -22,8 +22,11 @@ __device__ float RandomDepth(int seed,float dMin, float dMax);
 __device__ float* RandomNormal(int seed);
 
 
-__global__ void test_random_kernel(float *result,float min_value,float max_value);
 
+
+
+//Test
+__global__ void test_random_kernel(float *result,float min_value,float max_value);
 extern "C"
 {
     void test_random();
