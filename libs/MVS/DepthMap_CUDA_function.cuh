@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+
 //degree to radian
 __device__ float FromDegreeToRadian(double degree);
 //radian to degree
@@ -22,7 +23,23 @@ __device__ float RandomDepth(int seed,float dMin, float dMax);
 __device__ float* RandomNormal(int seed);
 
 
-
+extern "C"
+void cuda_patchmatch(
+		float *reference_image,int width,int height,
+        float *K,float *R,float *C,
+        double dMin,double dMax,
+        float *depthMap,float *normalMap,float *confMap,
+        float **neighbor_images,int neightbor_images_number,
+        float **Hl,float **Hm,float **Hr,
+		float smoothBonusDepth,float smoothBonusNormal,
+		float smoothSigmaDepth,
+		float smoothSigmaNormal,
+		float thMagnitudeSq,
+		float angle1Range,
+		float angle2Range,
+		float thConfSmall,
+		float thConfBig,
+		float thConfIgnore);
 
 
 //Test

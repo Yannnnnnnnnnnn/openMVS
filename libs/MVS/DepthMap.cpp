@@ -230,8 +230,54 @@ void DepthEstimator_CUDA::test()
 	test_random();
 }
 
+DepthEstimator_CUDA::DepthEstimator_CUDA(DepthData &depthData)
+	:
+	scores(depthData.images.GetSize()-1),
+	depthMap0(depthData.depthMap), normalMap0(depthData.normalMap), confMap0(depthData.confMap),
+	images(InitImages(depthData)), image0(depthData.images[0]),
+	size(depthData.images.First().image.size()),
+	dMin(depthData.dMin), dMax(depthData.dMax),
+	smoothBonusDepth(OPTDENSE::fRandomSmoothBonus), smoothBonusNormal(OPTDENSE::fRandomSmoothBonus*0.98f),
+	smoothSigmaDepth(-1.f/(2.f*SQUARE(OPTDENSE::fRandomSmoothDepth))), // used in exp(-x^2 / (2*(0.005^2)))
+	smoothSigmaNormal(-1.f/(2.f*SQUARE(FD2R(OPTDENSE::fRandomSmoothNormal)))), // used in exp(-x^2 / (2*(0.15^2)))
+	thMagnitudeSq(OPTDENSE::fDescriptorMinMagnitudeThreshold>0?SQUARE(OPTDENSE::fDescriptorMinMagnitudeThreshold):-1.f),
+	angle1Range(FD2R(OPTDENSE::fRandomAngle1Range)),
+	angle2Range(FD2R(OPTDENSE::fRandomAngle2Range)),
+	thConfSmall(OPTDENSE::fNCCThresholdKeep*0.25f),
+	thConfBig(OPTDENSE::fNCCThresholdKeep*0.5f),
+	thConfIgnore(OPTDENSE::fNCCThresholdKeep*1.5f)
+{
+	ASSERT(depthData.images.GetSize() >= 2);
+}
 
+void DepthEstimator_CUDA::ProcessPixel()
+{
+	//the most important thing is how to trans the data to the device
+	int neightbor_images_number = images.size();
 
+	float *neighbor_images[neightbor_images_number];
+	float *Hl[neightbor_images_number];
+	float *Hm[neightbor_images_number];
+	float *Hr[neightbor_images_number];
+	
+	// //error
+	// cuda_patchmatch(
+	// 	image0.image.getData(),size.width,size.height,
+	// 	image0.camera.K.data(),image0.camera.R.data(),image0.camera.C.data(),
+    //     dMin,dMax,
+    //     depthMap.getData(),normalMap.getData(),confMap.getData();
+    //     neighbor_images,neightbor_images_number,
+    //     Hl,Hm,Hr,
+	// 	smoothBonusDepth,smoothBonusNormal,
+	// 	smoothSigmaDepth,
+	// 	smoothSigmaNormal,
+	// 	thMagnitudeSq,
+	// 	angle1Range,
+	// 	angle2Range,
+	// 	thConfSmall,
+	// 	thConfBig,
+	// 	thConfIgnore);
+}
 
 // create the map for converting index to matrix position
 //                         1 2 3

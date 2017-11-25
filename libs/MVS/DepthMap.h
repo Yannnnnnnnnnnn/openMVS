@@ -182,7 +182,59 @@ typedef MVS_API SEACAVE::cList<DepthData,const DepthData&,1> DepthDataArr;
 
 struct MVS_API DepthEstimator_CUDA
 {
+	//needed data
+	struct ViewData 
+	{
+		const DepthData::ViewData &view;
+		const Matrix3x3 Hl;   //
+		const Vec3 Hm;	      // constants during per-pixel loops
+		const Matrix3x3 Hr;   //
+		inline ViewData() : view(*((const DepthData::ViewData*)this)) {}
+		inline ViewData(const DepthData::ViewData& image0, const DepthData::ViewData& image1)
+			: view(image1),
+			Hl(image1.camera.K * image1.camera.R * image0.camera.R.t()),
+			Hm(image1.camera.K * image1.camera.R * (image0.camera.C - image1.camera.C)),
+			Hr(image0.camera.K.inv()) {}
+	};
+
+	//neighbor images
+	CLISTDEF0(ViewData) images;  
+
+	//reference image
+	DepthData::ViewData& image0; 
+	FloatArr scores;
+	DepthMap &depthMap0; 
+	NormalMap &normalMap0;
+	ConfidenceMap &confMap0;
+	Depth dMin, dMax;
+	const Image8U::Size size;
+
+	//config parameter
+	float smoothBonusDepth, smoothBonusNormal;
+	float smoothSigmaDepth, smoothSigmaNormal;
+	float thMagnitudeSq;
+	float angle1Range, angle2Range;
+	float thConfSmall, thConfBig, thConfIgnore;
+	float scaleRanges[12];
+
+
+	//test cuda
 	void test();
+	//init
+	DepthEstimator_CUDA(DepthData &depthData);
+
+	//init images
+	static inline CLISTDEF0(ViewData) InitImages(const DepthData& depthData) 
+	{
+		CLISTDEF0(ViewData) images(0, depthData.images.GetSize()-1);
+		const DepthData::ViewData& image0(depthData.images.First());
+		for (IDX i=1; i<depthData.images.GetSize(); ++i)
+			images.AddConstruct(image0, depthData.images[i]);
+		return images;
+	}
+
+	//patchmatch
+	void ProcessPixel();
 };
 
 struct MVS_API DepthEstimator 
