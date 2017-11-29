@@ -3,7 +3,7 @@ language: cpp
 matrix:
   include:
     - os: linux
-      dist: xenial
+      dist: trusty
       sudo: required
     - os: osx
       sudo: required
